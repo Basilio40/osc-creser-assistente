@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSC CrêSer — Assistente com Skills</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- ===== Sidebar: skills agrupadas ===== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/logo.svg" alt="OSC CrêSer" class="logo" onerror="this.style.display='none'">
+        <div>
+          <h1>OSC CrêSer</h1>
+          <p class="subtitle">Assistente com Skills</p>
+        </div>
+      </div>
+
+      <nav id="skills-nav" class="skills-nav">
+        <!-- Categorias e skills geradas por js/skills.js -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="btn-new-chat" class="btn btn-ghost" title="Iniciar nova conversa">＋ Nova conversa</button>
+        <button id="btn-history" class="btn btn-ghost" title="Histórico de atividades e prompts">🕘 Histórico</button>
+        <button id="btn-settings" class="btn btn-ghost" title="Configurações">⚙ Configurações</button>
+      </div>
+    </aside>
+
+    <!-- ===== Área principal de chat ===== -->
+    <main class="main">
+      <header class="chat-header">
+        <div id="active-skill-info">
+          <span id="active-skill-name">Selecione uma skill</span>
+          <p id="active-skill-desc">Escolha uma categoria de tarefa na barra lateral para começar.</p>
+        </div>
+        <span>
+          <button id="btn-prompt-template" class="btn btn-ghost hidden" title="Abrir modelo de prompt desta skill para preencher, baixar ou enviar">📋 Modelo de prompt</button>
+          <span id="model-badge" class="model-badge"></span>
+        </span>
+      </header>
+
+      <div id="chat" class="chat">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">🤝</div>
+          <h2>Bem-vindo ao assistente da OSC CrêSer</h2>
+          <p>Selecione uma skill ao lado e faça sua pergunta.
+             As respostas seguem os guardrails definidos pela OSC CrêSer.</p>
+        </div>
+      </div>
+
+      <form id="input-form" class="input-area">
+        <textarea
+          id="user-input"
+          rows="1"
+          placeholder="Digite sua mensagem… (Enter envia, Shift+Enter quebra linha)"
+          disabled></textarea>
+        <button type="submit" id="btn-send" class="btn btn-primary" disabled>Enviar</button>
+      </form>
+
+      <p class="disclaimer">
+        ⚠ As respostas são geradas por IA e respeitam os limites definidos pelos guardrails da OSC CrêSer.
+        Revise sempre conteúdos jurídicos e financeiros antes de uso oficial.
+      </p>
+    </main>
+  </div>
+
+  <!-- ===== Modal de configurações ===== -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>Configurações</h2>
+
+      <label for="provider-select">Provedor de IA</label>
+      <select id="provider-select"></select>
+      <p class="hint" id="provider-hint"></p>
+
+      <label for="api-key">Chave da API</label>
+      <input type="password" id="api-key" placeholder="cole aqui sua chave" autocomplete="off">
+      <p class="hint">A chave fica salva apenas neste navegador (localStorage), uma por provedor, e só é usada nas chamadas ao provedor escolhido.</p>
+
+      <label for="model-select">Modelo</label>
+      <select id="model-select"></select>
+      <input type="text" id="model-custom" class="hidden" placeholder="nome exato do modelo" autocomplete="off">
+      <p class="hint" id="models-status"></p>
+
+      <label for="temperature">Criatividade (temperature): <span id="temp-value">0.4</span></label>
+      <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.4">
+
+      <div class="modal-actions">
+        <button id="btn-cancel-settings" class="btn btn-ghost">Cancelar</button>
+        <button id="btn-save-settings" class="btn btn-primary">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal de histórico ===== -->
+  <div id="history-modal" class="modal-overlay hidden">
+    <div class="modal modal-wide">
+      <h2>🕘 Histórico</h2>
+
+      <div class="history-tabs">
+        <button id="tab-activities" class="history-tab active">Atividades</button>
+        <button id="tab-prompts" class="history-tab">Prompts</button>
+      </div>
+
+      <div id="history-actions" class="history-actions">
+        <span id="history-count" class="hint"></span>
+        <span>
+          <button id="btn-export-activities" class="btn btn-ghost">⬇ Exportar CSV</button>
+          <button id="btn-clear-history" class="btn btn-ghost">🗑 Limpar esta aba</button>
+        </span>
+      </div>
+
+      <div id="history-list" class="history-list">
+        <!-- registros gerados por js/app.js -->
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-close-history" class="btn btn-primary">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal de modelo de prompt ===== -->
+  <div id="prompt-modal" class="modal-overlay hidden">
+    <div class="modal modal-wide">
+      <h2 id="prompt-modal-title">Modelo de prompt</h2>
+      <p class="hint">Preencha os campos <strong>[ENTRE COLCHETES]</strong>, depois baixe, copie ou envie ao chat. Um rascunho é salvo automaticamente neste navegador.</p>
+
+      <textarea id="prompt-editor" rows="16" spellcheck="false"></textarea>
+
+      <div class="modal-actions">
+        <span>
+          <button id="btn-prompt-download" class="btn btn-ghost">⬇ Baixar .txt</button>
+          <button id="btn-prompt-copy" class="btn btn-ghost">⧉ Copiar</button>
+          <button id="btn-prompt-reset" class="btn btn-ghost">↺ Restaurar original</button>
+        </span>
+        <span>
+          <button id="btn-prompt-close" class="btn btn-ghost">Cancelar</button>
+          <button id="btn-prompt-send" class="btn btn-primary">Enviar ao chat →</button>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
+  <script src="js/guardrails.js"></script>
+  <script src="js/skills.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/prompt-templates.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

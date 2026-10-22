@@ -1,0 +1,15 @@
+{
+  "name": "osc-creser-assistente",
+  "version": "1.0.0",
+  "description": "OSC CrêSer — Assistente com Skills (site estático servido para deploy no Railway)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
